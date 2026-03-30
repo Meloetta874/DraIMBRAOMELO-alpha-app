@@ -8,50 +8,71 @@
 
 <style>
 body {
+  margin: 0;
   background: #87CEFA;
   font-family: sans-serif;
+}
+
+/* β（左上） */
+#betaBox {
+  position: absolute;
+  top: 10px;
+  left: 15px;
+  font-size: 18px;
+}
+
+/* α（中央ドーン） */
+#alphaBox {
+  position: absolute;
+  top: 25%;
+  width: 100%;
   text-align: center;
-  margin: 0;
+  font-size: 90px;
+  font-weight: bold;
 }
 
-h1 {
-  font-size: 45px;
-  margin-top: 20px;
-}
-
-.value {
-  font-size: 60px;
-  margin: 10px;
-}
-
-/* αの色変化 */
+/* マイナス時 */
 .negative {
   color: red;
 }
 
+/* ボタンエリア */
+#buttons {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
 button {
-  width: 90%;
-  height: 70px;
-  font-size: 22px;
-  margin: 10px;
+  width: 100%;
+  height: 80px;
+  font-size: 24px;
   border: none;
   background: white;
 }
 
+/* グラフ */
 canvas {
-  max-width: 95%;
+  position: absolute;
+  top: 60%;
+  width: 100%;
 }
 </style>
 </head>
 
 <body>
 
-<h1>α: <span id="alpha">0</span></h1>
-<h1>β: <span id="beta">0</span></h1>
+<div id="betaBox">β: <span id="beta">0</span></div>
 
-<button onclick="add()">追加</button>
-<button onclick="consume()">消費</button>
-<button onclick="showStats()">統計</button>
+<div id="alphaBox">
+  <span id="alpha">0</span>
+</div>
+
+<div id="buttons">
+  <button onclick="add()">追加</button>
+  <button onclick="consume()">消費</button>
+  <button onclick="showStats()">統計</button>
+</div>
 
 <canvas id="graph"></canvas>
 
@@ -84,7 +105,6 @@ function updateUI() {
   const alphaEl = document.getElementById("alpha");
   alphaEl.textContent = data.alpha;
 
-  // マイナスなら赤
   if (data.alpha < 0) {
     alphaEl.classList.add("negative");
   } else {
