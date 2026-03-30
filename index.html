@@ -1,18 +1,16 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>時間管理 完全版</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body {
   margin: 0;
-  font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-  transition: background 0.5s, color 0.5s;
-  color: #000;
   background: #87CEFA;
-  min-height: 100vh;
+  font-family: sans-serif;
 }
 
 /* 総合時間 */
@@ -20,12 +18,11 @@ body {
   position: fixed;
   top: 10px;
   left: 15px;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
-  z-index: 100;
-  background: rgba(255, 255, 255, 0.3);
-  padding: 5px 10px;
-  border-radius: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  color: #000;
 }
 
 /* リセット */
@@ -33,143 +30,319 @@ body {
   position: fixed;
   top: 10px;
   right: 15px;
-  z-index: 100;
 }
 
 #resetBox button {
-  height: 40px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  background: rgba(255, 255, 255, 0.8);
-  cursor: pointer;
-  border-radius: 5px;
-  padding: 0 15px;
+  height: 45px;
+  font-size: 18px;
+  border: none;
+  background: white;
 }
 
-/* α表示エリア */
+/* α */
 #alphaBox {
-  padding-top: 100px;
+  margin-top: 120px;
   text-align: center;
-  font-size: clamp(40px, 15vw, 90px);
+  font-size: 90px;
   font-weight: bold;
 }
 
 .negative {
-  color: #ff4d4d !important;
-  text-shadow: 0 0 10px rgba(255,0,0,0.2);
+  color: red;
 }
 
-/* ボタンエリア */
+/* ボタン */
 #buttons {
-  width: 90%;
+  width: 100%;
   max-width: 500px;
   margin: 40px auto;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
 }
 
-.mainBtn {
+button {
   width: 100%;
-  height: 100px;
+  height: 130px;
   font-size: 28px;
-  font-weight: bold;
+  margin: 10px 0;
   border: none;
   background: white;
-  color: #333;
   cursor: pointer;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  transition: transform 0.1s, box-shadow 0.1s;
 }
 
-.mainBtn:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-/* 使い方ページ */
+/* ページ共通 */
 .page {
   display: none;
-  padding: 20px;
-  box-sizing: border-box;
+  text-align: center;
+  margin-top: 80px;
 }
 
-#helpPage {
-  background: rgba(255, 255, 255, 0.9);
-  color: #333 !important;
-  min-height: 100vh;
-}
-
+/* 戻る */
 .backBtn {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 100px;
-  height: 60px;
-  font-size: 18px;
-  background: #333;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  z-index: 100;
+  width: 130px;
+  height: 70px;
+  font-size: 22px;
 }
 
+/* 説明 */
 #helpText {
-  max-width: 600px;
-  margin: 0 auto;
-  font-size: 18px;
-  line-height: 1.6;
+  padding: 20px;
+  font-size: 20px;
   text-align: left;
+  line-height: 1.6;
 }
 
-/* 埋め込み画像 */
-.helpImage {
-  width: 100%;
-  max-width: 450px;
-  height: auto;
+/* ピラミッドグラフ */
+#pyramid {
+  max-width: 400px;
   margin: 30px auto;
-  display: block;
-  border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
 }
 </style>
 </head>
 
 <body>
 
+<!-- メイン -->
 <div id="mainPage">
-  <div id="betaBox">総合: <span id="beta">0時間0分</span></div>
+
+  <div id="betaBox">総合時間: <span id="beta">0時間0分</span></div>
 
   <div id="resetBox">
     <button onclick="resetData()">データ消去</button>
   </div>
 
   <div id="alphaBox">
-    <div style="font-size: 20px; opacity: 0.7;">使用可能時間</div>
     <span id="alpha">0時間0分</span>
   </div>
 
   <div id="buttons">
-    <button class="mainBtn" style="border-left: 10px solid #4CAF50;" onclick="add()">＋ 追加（作業）</button>
-    <button class="mainBtn" style="border-left: 10px solid #f44336;" onclick="consume()">－ 消費（遊び）</button>
-    <button class="mainBtn" style="background: #eee; height: 60px; font-size: 20px;" onclick="goHelp()">使い方・ランク</button>
+    <button onclick="add()">追加</button>
+    <button onclick="consume()">消費</button>
+    <button onclick="goStats()">統計</button>
+    <button onclick="goHelp()">使い方</button>
   </div>
+
 </div>
 
+<!-- 統計 -->
+<div id="statsPage" class="page">
+  <h1>統計</h1>
+  <canvas id="graph"></canvas>
+  <button class="backBtn" onclick="back()">戻る</button>
+</div>
+
+<!-- 使い方 -->
 <div id="helpPage" class="page">
-  <h1 style="text-align:center;">使い方</h1>
+  <h1>使い方</h1>
 
   <div id="helpText">
-    ■ <strong>追加</strong><br>
-    勉強や作業をした時間を入力します。入力した分だけ「使用可能時間」と「総合時間」が増えます。<br><br>
+    このアプリは「時間」を管理するためのシンプルなツールです。<br><br>
 
-    ■ <strong>消費</strong><br>
-    スマホや遊びに使った時間を入力します。<strong>入力した時間の2倍</strong>が「使用可能時間」から引かれます。<br><br>
+    ■ 追加<br>
+    勉強や作業など、頑張った時間を入力します。<br>
+    入力した分だけ「時間」と「総合時間」が増えます。<br><br>
 
-    ■ <strong>ランクシステム</strong><br>
-    総合時間に応じて背景が変化します。
+    ■ 消費<br>
+    スマホや遊びなどに使った時間を入力します。<br>
+    入力した時間の2倍が「時間」から引かれます。<br><br>
+
+    ■ 時間について<br>
+    「時間」は今あとどれだけ使えるかを表します。<br>
+    マイナスになると使いすぎの状態です。<br><br>
+
+    ■ 総合時間<br>
+    これまで積み上げた合計時間です。<br><br>
+
+    ■ β（総合時間）の背景色
+    <ul>
+      <li>0時間以上：水色</li>
+      <li>5時間以上：黄緑色</li>
+      <li>10時間以上：青色</li>
+      <li>50時間以上：紫色</li>
+      <li>100時間以上：赤色</li>
+      <li>300時間以上：金色</li>
+      <li>500時間以上：黒っぽく（文字は白で見やすく）</li>
+      <li>1000時間以上：虹色グラデーション</li>
+    </ul>
+
+    ■ ルール例<br>
+    「スマホ時間は勉強時間の半分まで」など、自分ルールで使えます。
   </div>
 
-  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAmsAAAHfCAYAAACp9S23AAAMbmlDQ1BJQ0MgUHJvZmlsZQAASImVVwdYVMfSvy/vK3vA0gLp0XvvoYMoCEqHIl1AOiIdka4iiKIIKAqxYSXFFWwgNlBUVBTBfowdFUSKiiXFxIJV/R0p8EneO76b2Xf+uZn/fTPn7OzsOfN+Z4EADu7w+PgcFgsAUbO5Am9Pd2pSajoNvA4fUAEM0AVeOL7EwzMoKAgAit5/4fN5AHm+S74uC/78Nf9nIQQXbwwP5AQA3Mjjm4X82CwZl0tX4LNiM0vRmf40O0Hj6WnK6Nof5CfoOqFr/8S5GTo5LwG07UfM4fMAAHqO+C6enMeHjABywZf6w/gQ+RAnY1K2LzsbwIuYVwW5C3mS+S/7eYv/C8ePyuMLuByh0B+dY8fPFPqA8/j4PPH/K+f4uVw4TzT7H15p5P85f94VvofPg976mNnZfB5U+Z5L5/GvPff8iHwOfM5/fA6P54v+yB7H8eNz+eK4/v7orM88wUfscRw/Pn+BP77L8S5wZf879vP4/P7oXPis6Cyo7Cqf8R5fHMcXfK4+e4EvnsPx6Y/OPYEv/uO4N/458Fv+7A55n9W/yL9iZ/fE5596wT25v8Rz5bP91Hj2XFfw+Y0D/V567bXvXvR66bWnfL93wF9H9/fS5/XScwDk/o6B7q7Ojo+5f9YAsD/v/p/fF4IAdE9P/uM//r5G9+d//v+n8D/8//Pof/4V/9Fw48G89f/36P/+vX5HwYn8v5yvHPDfO78p4JvwnwXvFPCfC+8m/L/I7xY8kP/7A/H9Of/9X/+R8f//jH/xX+U8oN/Bof+l8x/9e8Z/77M7/mHwI8j5ePwI//N/wVf7Y49/6X9xI7vjb2R4//7t/H/Nf4B8vjH/v3f/r48/eX9/P/r/+/+/8X/xZ8X/4r/9X+X8S96f9G/87/xvH//m/73f0X+f9+H/O7/2/87/4F/5n/uT/v1/4b99/I7/8X//9v///X8S8AXwH/4//w3//e//UuA5/w7fL/H5pZ/f4N5A4Q/8Nf9W+O7wXfM1+4vX+e/5I/5G/k7A8wOOfG//w45wI//9v+Y//C/7+f4/Cof//L/rX/y//7f99X//9//f8H/9Wv8FwF+Vfwfwrv7b/1D54v75f9O/y//+v+X/+X/Tf9u/6//B/zX/N/+P/+f/t/v//w/8O//7/yf//zDgxWn+FwG//M/5X/m//p/5f/rf+P/+f/O/+f/b/+n/5v9j+8b/F8m7wWf/Z/1O+8v85wLf/x9eCnxP/p8f8X/rP//z+T38b/0/+/f63/5v9b/+v92//5/+r/ev86///9C9e3/M+/v//5f+X/9P+rftX+8//9/8P//H+P/wP///8z/17/lP+of9v//v+L//N+bZ9bT5mPlR+Vv6b//R//3/0//r/419r798n4H/Gv9RfwFwAn8tvyT/Xf92f5v/E3+mPx//9v8+fw0/yNf0C/iF/fO+07+7v6e/pL/N//7v+y/6r/j//Zf8m/+f9wUBe9/vOveE/0Pff+R/4P+/7/fv+x9/9WreE7XmH9Y/pL8Yv8S/uL//H/x//u//7/+3/u//9//X/1f/4v+f4T3Vq7r33H++C999333vH+8X7+/vxu8G78bvSu9w7zbv0u8K72LPd47H97X27fc945vh+26ve+/9XuOefZ5NnlOeKZ4DnsOeBce7+Vp5znoGe4549nlWv9PTe+Sd3T2Pe854vnb6eXp5rnS+5PzuOdnzpOd9z0fP9Z73PQ494T0ePZM88zzf8/zUbeuN6U3vbe5N7E3tTe8N603oTey9pTep98beM7z39D7Sre99vneXdwUvL6/vve69Pr0mvSHeD7wTve95T3j3eY97z9K651reK/4K5M4Xv8O694nvA+K9S/O+75uS923fyL+HOf/p
+  <canvas id="pyramid" width="400" height="400"></canvas>
+
+  <button class="backBtn" onclick="back()">戻る</button>
+</div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("data")) || {
+  alpha: 0,
+  beta: 0,
+  logs: {}
+};
+
+function save() {
+  localStorage.setItem("data", JSON.stringify(data));
+}
+
+function formatTime(min) {
+  const h = Math.floor(Math.abs(min) / 60);
+  const m = Math.abs(min) % 60;
+  return (min < 0 ? "-" : "") + h + "時間" + m + "分";
+}
+
+function todayKey() {
+  const now = new Date();
+  if (now.getHours() < 4) now.setDate(now.getDate() - 1);
+  return now.toISOString().slice(0,10);
+}
+
+function ensureToday() {
+  const key = todayKey();
+  if (!data.logs[key]) {
+    data.logs[key] = { add:0, consume:0 };
+  }
+  return key;
+}
+
+// UI更新
+function updateUI() {
+  const alphaEl = document.getElementById("alpha");
+
+  alphaEl.textContent = formatTime(data.alpha);
+  document.getElementById("beta").textContent = formatTime(data.beta);
+
+  if (data.alpha < 0) {
+    alphaEl.classList.add("negative");
+  } else {
+    alphaEl.classList.remove("negative");
+  }
+
+  updateBackground(); // 背景色更新
+}
+
+// β背景色
+function updateBackground() {
+  const betaEl = document.getElementById("betaBox");
+  const betaHours = data.beta / 60; // 分 → 時間
+
+  let bg = "#87CEFA"; // デフォルト水色
+  let textColor = "#000";
+
+  if (betaHours > 1000) {
+    bg = "linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet)";
+    textColor = "#fff";
+  } else if (betaHours > 500) {
+    bg = "#111";
+    textColor = "#fff";
+  } else if (betaHours > 300) {
+    bg = "gold";
+  } else if (betaHours > 100) {
+    bg = "red";
+    textColor = "#fff";
+  } else if (betaHours > 50) {
+    bg = "purple";
+    textColor = "#fff";
+  } else if (betaHours > 10) {
+    bg = "blue";
+    textColor = "#fff";
+  } else if (betaHours > 5) {
+    bg = "lightgreen";
+  } else if (betaHours > 0) {
+    bg = "#87CEFA";
+  }
+
+  betaEl.style.background = bg;
+  betaEl.style.color = textColor;
+}
+
+// ページ切替
+function showPage(id) {
+  document.getElementById("mainPage").style.display = "none";
+  document.getElementById("statsPage").style.display = "none";
+  document.getElementById("helpPage").style.display = "none";
+
+  document.getElementById(id).style.display = "block";
+
+  if(id === "helpPage") drawPyramid();
+}
+
+// 追加
+function add() {
+  const val = parseInt(prompt("追加（分）"));
+  if (!val || val <= 0) return;
+
+  const key = ensureToday();
+
+  data.alpha += val;
+  data.beta += val;
+  data.logs[key].add += val;
+
+  save();
+  updateUI();
+}
+
+// 消費
+function consume() {
+  const val = parseInt(prompt("消費（分）"));
+  if (!val || val <= 0) return;
+
+  const cost = val * 2;
+  const key = ensureToday();
+
+  data.alpha -= cost;
+  data.logs[key].consume += cost;
+
+  save();
+  updateUI();
+}
+
+// 統計
+function goStats() {
+  showPage("statsPage");
+
+  const labels = Object.keys(data.logs);
+  const adds = labels.map(d => data.logs[d].add);
+  const consumes = labels.map(d => data.logs[d].consume);
+
+  new Chart(document.getElementById("graph"), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: '追加', data: adds, backgroundColor: 'lightgreen' },
+        { label: '消費(×2)', data: consumes, backgroundColor: 'red' }
+      ]
+    }
+  });
+}
+<img class="help-image" src="help-image.png">  
+// 使い方
+function goHelp() {
+  showPage("helpPage");
+}
+
+// 戻る
+function back() {
+  showPage("mainPage");
+}
+
+// リセット
+function resetData() {
+  const ok = confirm("データは復元できません。本当に削除しますか？");
+  if (!ok) return;
+
+  localStorage.removeItem("data");
+  data = { alpha: 0, beta: 0, logs: {} };
+  updateUI();
+}
+
+
+
+document.getElementById("mainPage").style.display = "block";
+updateUI();
+</script>
+
+</body>
+</html>
