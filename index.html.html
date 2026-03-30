@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>α管理アプリ</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body { font-family: sans-serif; text-align: center; }
+button { margin: 10px; padding: 10px 20px; font-size: 16px; }
+#graph { max-width: 90%; }
+</style>
+</head>
+
+<body>
+
+<h1>α: <span id="alpha">0</span> 分</h1>
+
+<button onclick="add()">追加</button>
+<button onclick="consume()">消費</button>
+<button onclick="screenTime()">スクリーンタイム</button>
+<button onclick="showStats()">統計</button>
+
+<canvas id="graph"></canvas>
+
+<script>
+let data = JSON.parse(localStorage.getItem("data")) || {
+  alpha: 0,
+  logs: {}
+};
+
+function save() {
+  localStorage.setItem("data", JSON.stringify(data));
+}
+
+function todayKey() {
+  const now = new Date();
+  if (now.getHours() < 4) now.setDate(now.getDate() - 1);
+  return now.toISOString().slice(0,10);
+}
+
+function ensureToday() {
+  const key = todayKey();
+  if (!data.logs[key]) {
+    data.logs[key] = { add:0, consume:0, screen:0 };
+  }
+  return key;
+}
+
+function updateUI() {
+  document.getElementById("alpha").textContent = data.alpha;
+}
+
+function add() {
+  const val = parseInt(prompt("追加する分数"));
+  if (!val || val <= 0) return;
+
+  const key = ensureToday();
+  data.alpha += val;
+  data.logs[key].add += val;
+
+  save();
+  updateUI();
+}
+
+function consume() {
+  const val = parseInt(prompt("消費する分数"));
+  if (!val || val <= 0) return;
+
+  const cost = val * 2;
+  const key = ensureToday();
+
+  data.alpha -= cost;
+  data.logs[key].consume += cost;
+
+  save();
+  updateUI();
+}
+
+function screenTime() {
+  const val = parseInt(prompt("スクリーンタイム（分）"));
+  if (!val || val <= 0) return;
+
+  const cost = val * 2;
+  const key = ensureToday();
+
+  data.alpha -= cost;
+  data.logs[key].screen += cost;
+
+  save();
+  updateUI();
+}
+
+function showStats() {
+  const labels = Object.keys(data.logs);
+  const adds = labels.map(d => data.logs[d].add);
+  const consumes = labels.map(d => data.logs[d].consume);
+  const screens = labels.map(d => data.logs[d].screen);
+
+  new Chart(document.getElementById("graph"), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: '追加(分)', data: adds },
+        { label: '消費(分×2)', data: consumes },
+        { label: 'スクリーン(分×2)', data: screens }
+      ]
+    }
+  });
+}
+
+updateUI();
+</script>
+
+</body>
+</html>
