@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <title>時間管理 完全版</title>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
 body {
   margin: 0;
   background: #87CEFA;
   font-family: sans-serif;
+  transition: background 0.5s;
 }
 
 /* 総合時間 */
@@ -23,6 +22,7 @@ body {
   padding: 10px;
   border-radius: 10px;
   color: #000;
+  background: rgba(255,255,255,0.5);
 }
 
 /* リセット */
@@ -31,12 +31,12 @@ body {
   top: 10px;
   right: 15px;
 }
-
 #resetBox button {
   height: 45px;
   font-size: 18px;
   border: none;
   background: white;
+  cursor: pointer;
 }
 
 /* α */
@@ -46,10 +46,7 @@ body {
   font-size: 90px;
   font-weight: bold;
 }
-
-.negative {
-  color: red;
-}
+.negative { color: red; }
 
 /* ボタン */
 #buttons {
@@ -57,7 +54,6 @@ body {
   max-width: 500px;
   margin: 40px auto;
 }
-
 button {
   width: 100%;
   height: 130px;
@@ -69,11 +65,7 @@ button {
 }
 
 /* ページ共通 */
-.page {
-  display: none;
-  text-align: center;
-  margin-top: 80px;
-}
+.page { display: none; text-align: center; margin-top: 80px; }
 
 /* 戻る */
 .backBtn {
@@ -92,37 +84,23 @@ button {
   text-align: left;
   line-height: 1.6;
 }
-
-/* ピラミッドグラフ */
-#pyramid {
-  max-width: 400px;
-  margin: 30px auto;
-}
 </style>
 </head>
 
 <body>
-
 <!-- メイン -->
 <div id="mainPage">
-
   <div id="betaBox">総合時間: <span id="beta">0時間0分</span></div>
-
   <div id="resetBox">
     <button onclick="resetData()">データ消去</button>
   </div>
-
-  <div id="alphaBox">
-    <span id="alpha">0時間0分</span>
-  </div>
-
+  <div id="alphaBox"><span id="alpha">0時間0分</span></div>
   <div id="buttons">
     <button onclick="add()">追加</button>
     <button onclick="consume()">消費</button>
     <button onclick="goStats()">統計</button>
     <button onclick="goHelp()">使い方</button>
   </div>
-
 </div>
 
 <!-- 統計 -->
@@ -135,7 +113,6 @@ button {
 <!-- 使い方 -->
 <div id="helpPage" class="page">
   <h1>使い方</h1>
-
   <div id="helpText">
     このアプリは「時間」を管理するためのシンプルなツールです。<br><br>
 
@@ -151,10 +128,7 @@ button {
     「時間」は今あとどれだけ使えるかを表します。<br>
     マイナスになると使いすぎの状態です。<br><br>
 
-    ■ 総合時間<br>
-    これまで積み上げた合計時間です。<br><br>
-
-    ■ β（総合時間）の背景色
+    ■ 総合時間（β）の背景色ルール
     <ul>
       <li>0時間以上：水色</li>
       <li>5時間以上：黄緑色</li>
@@ -162,119 +136,75 @@ button {
       <li>50時間以上：紫色</li>
       <li>100時間以上：赤色</li>
       <li>300時間以上：金色</li>
-      <li>500時間以上：黒っぽく（文字は白で見やすく）</li>
+      <li>500時間以上：灰色（文字は白）</li>
       <li>1000時間以上：虹色グラデーション</li>
     </ul>
 
     ■ ルール例<br>
     「スマホ時間は勉強時間の半分まで」など、自分ルールで使えます。
   </div>
-
-  <canvas id="pyramid" width="400" height="400"></canvas>
-
   <button class="backBtn" onclick="back()">戻る</button>
 </div>
 
 <script>
-let data = JSON.parse(localStorage.getItem("data")) || {
-  alpha: 0,
-  beta: 0,
-  logs: {}
-};
+let data = JSON.parse(localStorage.getItem("data")) || { alpha:0, beta:0, logs:{} };
 
-function save() {
-  localStorage.setItem("data", JSON.stringify(data));
-}
+function save() { localStorage.setItem("data", JSON.stringify(data)); }
 
 function formatTime(min) {
-  const h = Math.floor(Math.abs(min) / 60);
-  const m = Math.abs(min) % 60;
-  return (min < 0 ? "-" : "") + h + "時間" + m + "分";
+  const h = Math.floor(Math.abs(min)/60);
+  const m = Math.abs(min)%60;
+  return (min<0?"-":"") + h + "時間" + m + "分";
 }
 
 function todayKey() {
   const now = new Date();
-  if (now.getHours() < 4) now.setDate(now.getDate() - 1);
+  if(now.getHours()<4) now.setDate(now.getDate()-1);
   return now.toISOString().slice(0,10);
 }
 
 function ensureToday() {
   const key = todayKey();
-  if (!data.logs[key]) {
-    data.logs[key] = { add:0, consume:0 };
-  }
+  if(!data.logs[key]) data.logs[key]={add:0, consume:0};
   return key;
 }
 
 // UI更新
 function updateUI() {
-  const alphaEl = document.getElementById("alpha");
-
-  alphaEl.textContent = formatTime(data.alpha);
+  document.getElementById("alpha").textContent = formatTime(data.alpha);
   document.getElementById("beta").textContent = formatTime(data.beta);
 
-  if (data.alpha < 0) {
-    alphaEl.classList.add("negative");
-  } else {
-    alphaEl.classList.remove("negative");
-  }
+  const alphaEl = document.getElementById("alpha");
+  if(data.alpha < 0) alphaEl.classList.add("negative");
+  else alphaEl.classList.remove("negative");
 
-  updateBackground(); // 背景色更新
+  updateBackground();
 }
 
-// β背景色
+// 背景色更新（全体）
 function updateBackground() {
-  const betaEl = document.getElementById("betaBox");
-  const betaHours = data.beta / 60; // 分 → 時間
+  const hours = data.beta/60;
+  let bg = "#87CEFA", color="#000";
 
-  let bg = "#87CEFA"; // デフォルト水色
-  let textColor = "#000";
+  if(hours > 1000) { bg="linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet)"; color="#fff"; }
+  else if(hours > 500) { bg="#555"; color="#fff"; }
+  else if(hours > 300) bg="gold";
+  else if(hours > 100) { bg="red"; color="#fff"; }
+  else if(hours > 50) { bg="purple"; color="#fff"; }
+  else if(hours > 10) { bg="blue"; color="#fff"; }
+  else if(hours > 5) bg="lightgreen";
 
-  if (betaHours > 1000) {
-    bg = "linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet)";
-    textColor = "#fff";
-  } else if (betaHours > 500) {
-    bg = "#111";
-    textColor = "#fff";
-  } else if (betaHours > 300) {
-    bg = "gold";
-  } else if (betaHours > 100) {
-    bg = "red";
-    textColor = "#fff";
-  } else if (betaHours > 50) {
-    bg = "purple";
-    textColor = "#fff";
-  } else if (betaHours > 10) {
-    bg = "blue";
-    textColor = "#fff";
-  } else if (betaHours > 5) {
-    bg = "lightgreen";
-  } else if (betaHours > 0) {
-    bg = "#87CEFA";
-  }
-
-  betaEl.style.background = bg;
-  betaEl.style.color = textColor;
-}
-
-// ページ切替
-function showPage(id) {
-  document.getElementById("mainPage").style.display = "none";
-  document.getElementById("statsPage").style.display = "none";
-  document.getElementById("helpPage").style.display = "none";
-
-  document.getElementById(id).style.display = "block";
-
-  if(id === "helpPage") drawPyramid();
+  document.body.style.background = bg;
+  document.getElementById("betaBox").style.color = color;
 }
 
 // 追加
 function add() {
-  const val = parseInt(prompt("追加（分）"));
-  if (!val || val <= 0) return;
+  const input = prompt("追加（分）");
+  const val = Number(input);
+  if(!input || isNaN(val) || val<=0) return;
 
   const key = ensureToday();
-
   data.alpha += val;
   data.beta += val;
   data.logs[key].add += val;
@@ -285,12 +215,12 @@ function add() {
 
 // 消費
 function consume() {
-  const val = parseInt(prompt("消費（分）"));
-  if (!val || val <= 0) return;
+  const input = prompt("消費（分）");
+  const val = Number(input);
+  if(!input || isNaN(val) || val<=0) return;
 
-  const cost = val * 2;
+  const cost = val*2;
   const key = ensureToday();
-
   data.alpha -= cost;
   data.logs[key].consume += cost;
 
@@ -301,47 +231,44 @@ function consume() {
 // 統計
 function goStats() {
   showPage("statsPage");
-
   const labels = Object.keys(data.logs);
-  const adds = labels.map(d => data.logs[d].add);
-  const consumes = labels.map(d => data.logs[d].consume);
+  const adds = labels.map(d=>data.logs[d].add);
+  const consumes = labels.map(d=>data.logs[d].consume);
 
   new Chart(document.getElementById("graph"), {
     type: 'bar',
     data: {
       labels: labels,
       datasets: [
-        { label: '追加', data: adds, backgroundColor: 'lightgreen' },
-        { label: '消費(×2)', data: consumes, backgroundColor: 'red' }
+        { label:'追加', data:adds, backgroundColor:'lightgreen' },
+        { label:'消費(×2)', data:consumes, backgroundColor:'red' }
       ]
-    }
+    },
+    options:{responsive:true}
   });
 }
 
-// 使い方
-function goHelp() {
-  showPage("helpPage");
+// ページ切替
+function showPage(id) {
+  document.getElementById("mainPage").style.display="none";
+  document.getElementById("statsPage").style.display="none";
+  document.getElementById("helpPage").style.display="none";
+  document.getElementById(id).style.display="block";
 }
 
-// 戻る
-function back() {
-  showPage("mainPage");
-}
+function goHelp(){ showPage("helpPage"); }
+function back(){ showPage("mainPage"); }
 
 // リセット
-function resetData() {
-  const ok = confirm("データは復元できません。本当に削除しますか？");
-  if (!ok) return;
-
+function resetData(){
+  if(!confirm("データは復元できません。本当に削除しますか？")) return;
   localStorage.removeItem("data");
-  data = { alpha: 0, beta: 0, logs: {} };
+  data = { alpha:0, beta:0, logs:{} };
   updateUI();
 }
 
-
-document.getElementById("mainPage").style.display = "block";
+document.getElementById("mainPage").style.display="block";
 updateUI();
 </script>
-
 </body>
 </html>
