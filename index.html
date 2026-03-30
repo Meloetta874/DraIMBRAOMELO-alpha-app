@@ -9,9 +9,8 @@
 <style>
 body {
   margin: 0;
+  background: #87CEFA;
   font-family: sans-serif;
-  transition: background 0.5s; /* 背景変化アニメーション */
-  color: #000;
 }
 
 /* 総合時間 */
@@ -21,6 +20,9 @@ body {
   left: 15px;
   font-size: 28px;
   font-weight: bold;
+  padding: 10px;
+  border-radius: 10px;
+  color: #000;
 }
 
 /* リセット */
@@ -35,7 +37,6 @@ body {
   font-size: 18px;
   border: none;
   background: white;
-  cursor: pointer;
 }
 
 /* α */
@@ -92,7 +93,7 @@ button {
   line-height: 1.6;
 }
 
-/* 棒グラフ */
+/* ピラミッドグラフ */
 #pyramid {
   max-width: 400px;
   margin: 30px auto;
@@ -153,15 +154,20 @@ button {
     ■ 総合時間<br>
     これまで積み上げた合計時間です。<br><br>
 
-    ■ 背景色の変化（総合時間に応じて画面全体）<br>
-    - 0時間以上：水色<br>
-    - 5時間以上：黄緑色<br>
-    - 10時間以上：青色<br>
-    - 50時間以上：紫色<br>
-    - 100時間以上：赤色<br>
-    - 300時間以上：金色<br>
-    - 500時間以上：灰色<br>
-    - 1000時間以上：虹色<br><br>
+    ■ β（総合時間）の背景色
+    <ul>
+      <li>0時間以上：水色</li>
+      <li>5時間以上：黄緑色</li>
+      <li>10時間以上：青色</li>
+      <li>50時間以上：紫色</li>
+      <li>100時間以上：赤色</li>
+      <li>300時間以上：金色</li>
+      <li>500時間以上：黒っぽく（文字は白で見やすく）</li>
+      <li>1000時間以上：虹色グラデーション</li>
+    </ul>
+
+    ■ ルール例<br>
+    「スマホ時間は勉強時間の半分まで」など、自分ルールで使えます。
   </div>
 
   <canvas id="pyramid" width="400" height="400"></canvas>
@@ -203,6 +209,7 @@ function ensureToday() {
 // UI更新
 function updateUI() {
   const alphaEl = document.getElementById("alpha");
+
   alphaEl.textContent = formatTime(data.alpha);
   document.getElementById("beta").textContent = formatTime(data.beta);
 
@@ -212,43 +219,42 @@ function updateUI() {
     alphaEl.classList.remove("negative");
   }
 
-  updateBackground(); // 背景色変更
+  updateBackground(); // 背景色更新
 }
 
-// 全体背景色変更
+// β背景色
 function updateBackground() {
-  const body = document.body;
-  const betaHours = data.beta / 60;
+  const betaEl = document.getElementById("betaBox");
+  const betaHours = data.beta / 60; // 分 → 時間
 
   let bg = "#87CEFA"; // デフォルト水色
+  let textColor = "#000";
 
   if (betaHours > 1000) {
     bg = "linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet)";
-    body.style.color = "#fff";
+    textColor = "#fff";
   } else if (betaHours > 500) {
-    bg = "gray";
-    body.style.color = "#000";
+    bg = "#111";
+    textColor = "#fff";
   } else if (betaHours > 300) {
     bg = "gold";
-    body.style.color = "#000";
   } else if (betaHours > 100) {
     bg = "red";
-    body.style.color = "#fff";
+    textColor = "#fff";
   } else if (betaHours > 50) {
     bg = "purple";
-    body.style.color = "#fff";
+    textColor = "#fff";
   } else if (betaHours > 10) {
     bg = "blue";
-    body.style.color = "#fff";
+    textColor = "#fff";
   } else if (betaHours > 5) {
     bg = "lightgreen";
-    body.style.color = "#000";
   } else if (betaHours > 0) {
     bg = "#87CEFA";
-    body.style.color = "#000";
   }
 
-  body.style.background = bg;
+  betaEl.style.background = bg;
+  betaEl.style.color = textColor;
 }
 
 // ページ切替
@@ -266,10 +272,13 @@ function showPage(id) {
 function add() {
   const val = parseInt(prompt("追加（分）"));
   if (!val || val <= 0) return;
+
   const key = ensureToday();
+
   data.alpha += val;
   data.beta += val;
   data.logs[key].add += val;
+
   save();
   updateUI();
 }
@@ -278,10 +287,13 @@ function add() {
 function consume() {
   const val = parseInt(prompt("消費（分）"));
   if (!val || val <= 0) return;
+
   const cost = val * 2;
   const key = ensureToday();
+
   data.alpha -= cost;
   data.logs[key].consume += cost;
+
   save();
   updateUI();
 }
@@ -289,6 +301,7 @@ function consume() {
 // 統計
 function goStats() {
   showPage("statsPage");
+
   const labels = Object.keys(data.logs);
   const adds = labels.map(d => data.logs[d].add);
   const consumes = labels.map(d => data.logs[d].consume);
@@ -317,12 +330,13 @@ function back() {
 
 // リセット
 function resetData() {
-  if (!confirm("データは復元できません。本当に削除しますか？")) return;
+  const ok = confirm("データは復元できません。本当に削除しますか？");
+  if (!ok) return;
+
   localStorage.removeItem("data");
   data = { alpha: 0, beta: 0, logs: {} };
   updateUI();
 }
-
 
 
 document.getElementById("mainPage").style.display = "block";
