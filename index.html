@@ -2,24 +2,55 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>α管理アプリ</title>
+<title>ポイント管理</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body { font-family: sans-serif; text-align: center; }
-button { margin: 10px; padding: 10px 20px; font-size: 16px; }
-#graph { max-width: 90%; }
+body {
+  background: #87CEFA;
+  font-family: sans-serif;
+  text-align: center;
+  margin: 0;
+}
+
+h1 {
+  font-size: 45px;
+  margin-top: 20px;
+}
+
+.value {
+  font-size: 60px;
+  margin: 10px;
+}
+
+/* αの色変化 */
+.negative {
+  color: red;
+}
+
+button {
+  width: 90%;
+  height: 70px;
+  font-size: 22px;
+  margin: 10px;
+  border: none;
+  background: white;
+}
+
+canvas {
+  max-width: 95%;
+}
 </style>
 </head>
 
 <body>
 
-<h1>α: <span id="alpha">0</span> 分</h1>
+<h1>α: <span id="alpha">0</span></h1>
+<h1>β: <span id="beta">0</span></h1>
 
 <button onclick="add()">追加</button>
 <button onclick="consume()">消費</button>
-<button onclick="screenTime()">スクリーンタイム</button>
 <button onclick="showStats()">統計</button>
 
 <canvas id="graph"></canvas>
@@ -27,6 +58,7 @@ button { margin: 10px; padding: 10px 20px; font-size: 16px; }
 <script>
 let data = JSON.parse(localStorage.getItem("data")) || {
   alpha: 0,
+  beta: 0,
   logs: {}
 };
 
@@ -43,29 +75,43 @@ function todayKey() {
 function ensureToday() {
   const key = todayKey();
   if (!data.logs[key]) {
-    data.logs[key] = { add:0, consume:0, screen:0 };
+    data.logs[key] = { add:0, consume:0 };
   }
   return key;
 }
 
 function updateUI() {
-  document.getElementById("alpha").textContent = data.alpha;
+  const alphaEl = document.getElementById("alpha");
+  alphaEl.textContent = data.alpha;
+
+  // マイナスなら赤
+  if (data.alpha < 0) {
+    alphaEl.classList.add("negative");
+  } else {
+    alphaEl.classList.remove("negative");
+  }
+
+  document.getElementById("beta").textContent = data.beta;
 }
 
+// 追加
 function add() {
-  const val = parseInt(prompt("追加する分数"));
+  const val = parseInt(prompt("追加する値"));
   if (!val || val <= 0) return;
 
   const key = ensureToday();
+
   data.alpha += val;
+  data.beta += val;
   data.logs[key].add += val;
 
   save();
   updateUI();
 }
 
+// 消費
 function consume() {
-  const val = parseInt(prompt("消費する分数"));
+  const val = parseInt(prompt("消費する値"));
   if (!val || val <= 0) return;
 
   const cost = val * 2;
@@ -78,34 +124,19 @@ function consume() {
   updateUI();
 }
 
-function screenTime() {
-  const val = parseInt(prompt("スクリーンタイム（分）"));
-  if (!val || val <= 0) return;
-
-  const cost = val * 2;
-  const key = ensureToday();
-
-  data.alpha -= cost;
-  data.logs[key].screen += cost;
-
-  save();
-  updateUI();
-}
-
+// 統計
 function showStats() {
   const labels = Object.keys(data.logs);
   const adds = labels.map(d => data.logs[d].add);
   const consumes = labels.map(d => data.logs[d].consume);
-  const screens = labels.map(d => data.logs[d].screen);
 
   new Chart(document.getElementById("graph"), {
     type: 'bar',
     data: {
       labels: labels,
       datasets: [
-        { label: '追加(分)', data: adds },
-        { label: '消費(分×2)', data: consumes },
-        { label: 'スクリーン(分×2)', data: screens }
+        { label: '追加', data: adds },
+        { label: '消費(×2)', data: consumes }
       ]
     }
   });
