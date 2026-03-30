@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>時間管理</title>
+<title>時間管理 完全版</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -20,6 +20,9 @@ body {
   left: 15px;
   font-size: 28px;
   font-weight: bold;
+  padding: 10px;
+  border-radius: 10px;
+  color: #000;
 }
 
 /* リセット */
@@ -62,6 +65,7 @@ button {
   margin: 10px 0;
   border: none;
   background: white;
+  cursor: pointer;
 }
 
 /* ページ共通 */
@@ -87,6 +91,12 @@ button {
   font-size: 20px;
   text-align: left;
   line-height: 1.6;
+}
+
+/* ピラミッドグラフ */
+#pyramid {
+  max-width: 400px;
+  margin: 30px auto;
 }
 </style>
 </head>
@@ -144,9 +154,23 @@ button {
     ■ 総合時間<br>
     これまで積み上げた合計時間です。<br><br>
 
+    ■ β（総合時間）の背景色
+    <ul>
+      <li>0時間以上：水色</li>
+      <li>5時間以上：黄緑色</li>
+      <li>10時間以上：青色</li>
+      <li>50時間以上：紫色</li>
+      <li>100時間以上：赤色</li>
+      <li>300時間以上：金色</li>
+      <li>500時間以上：黒っぽく（文字は白で見やすく）</li>
+      <li>1000時間以上：虹色グラデーション</li>
+    </ul>
+
     ■ ルール例<br>
     「スマホ時間は勉強時間の半分まで」など、自分ルールで使えます。
   </div>
+
+  <canvas id="pyramid" width="400" height="400"></canvas>
 
   <button class="backBtn" onclick="back()">戻る</button>
 </div>
@@ -182,6 +206,7 @@ function ensureToday() {
   return key;
 }
 
+// UI更新
 function updateUI() {
   const alphaEl = document.getElementById("alpha");
 
@@ -193,6 +218,43 @@ function updateUI() {
   } else {
     alphaEl.classList.remove("negative");
   }
+
+  updateBackground(); // 背景色更新
+}
+
+// β背景色
+function updateBackground() {
+  const betaEl = document.getElementById("betaBox");
+  const betaHours = data.beta / 60; // 分 → 時間
+
+  let bg = "#87CEFA"; // デフォルト水色
+  let textColor = "#000";
+
+  if (betaHours > 1000) {
+    bg = "linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet)";
+    textColor = "#fff";
+  } else if (betaHours > 500) {
+    bg = "#111";
+    textColor = "#fff";
+  } else if (betaHours > 300) {
+    bg = "gold";
+  } else if (betaHours > 100) {
+    bg = "red";
+    textColor = "#fff";
+  } else if (betaHours > 50) {
+    bg = "purple";
+    textColor = "#fff";
+  } else if (betaHours > 10) {
+    bg = "blue";
+    textColor = "#fff";
+  } else if (betaHours > 5) {
+    bg = "lightgreen";
+  } else if (betaHours > 0) {
+    bg = "#87CEFA";
+  }
+
+  betaEl.style.background = bg;
+  betaEl.style.color = textColor;
 }
 
 // ページ切替
@@ -202,6 +264,8 @@ function showPage(id) {
   document.getElementById("helpPage").style.display = "none";
 
   document.getElementById(id).style.display = "block";
+
+  if(id === "helpPage") drawPyramid();
 }
 
 // 追加
@@ -247,8 +311,8 @@ function goStats() {
     data: {
       labels: labels,
       datasets: [
-        { label: '追加', data: adds },
-        { label: '消費(×2)', data: consumes }
+        { label: '追加', data: adds, backgroundColor: 'lightgreen' },
+        { label: '消費(×2)', data: consumes, backgroundColor: 'red' }
       ]
     }
   });
@@ -270,9 +334,42 @@ function resetData() {
   if (!ok) return;
 
   localStorage.removeItem("data");
-
   data = { alpha: 0, beta: 0, logs: {} };
   updateUI();
+}
+
+// ピラミッドグラフ描画
+function drawPyramid() {
+  const ctx = document.getElementById("pyramid").getContext("2d");
+
+  const labels = ["虹","黒","金","赤","紫","青","黄緑","水色"];
+  const dataValues = [1,2,3,4,5,6,7,8]; // 下に行くほど値増やす
+  const colors = [
+    "linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet)",
+    "#111", "gold", "red", "purple", "blue", "lightgreen", "#87CEFA"
+  ];
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels.reverse(),
+      datasets: [{
+        label: 'ピラミッド',
+        data: dataValues.reverse(),
+        backgroundColor: colors.reverse()
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      scales: {
+        x: { display: false },
+        y: { display: false }
+      },
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
 }
 
 document.getElementById("mainPage").style.display = "block";
