@@ -13,36 +13,36 @@ body {
   font-family: sans-serif;
 }
 
-/* 総合時間（左上） */
+/* 総合時間 */
 #betaBox {
-  position: absolute;
+  position: fixed;
   top: 10px;
   left: 15px;
-  font-size: 32px;
+  font-size: 28px;
   font-weight: bold;
+  z-index: 10;
 }
 
-/* データ消去（右上） */
+/* リセット */
 #resetBox {
-  position: absolute;
+  position: fixed;
   top: 10px;
   right: 15px;
+  z-index: 10;
 }
 
 #resetBox button {
-  height: 50px;
-  font-size: 20px;
-  background: white;
+  height: 45px;
+  font-size: 18px;
   border: none;
+  background: white;
 }
 
-/* 時間（中央） */
+/* α */
 #alphaBox {
-  position: absolute;
-  top: 20%;
-  width: 100%;
+  margin-top: 120px; /* ←下げた */
   text-align: center;
-  font-size: 110px;
+  font-size: 90px; /* ←少し縮小 */
   font-weight: bold;
 }
 
@@ -52,29 +52,29 @@ body {
 
 /* ボタン */
 #buttons {
-  position: absolute;
-  bottom: 0;
   width: 100%;
+  max-width: 500px;
+  margin: 50px auto;
 }
 
 button {
-  width: 90%;
-  height: 180px;
-  font-size: 36px;
-  margin: 15px auto;
-  display: block;
+  width: 100%;
+  height: 130px; /* ←3/4くらい */
+  font-size: 28px;
+  margin: 10px 0;
   border: none;
   background: white;
 }
 
-/* 統計画面 */
+/* 統計 */
 #statsPage {
   display: none;
   text-align: center;
+  margin-top: 80px;
 }
 
 canvas {
-  width: 100%;
+  width: 90%;
 }
 
 /* 戻る */
@@ -82,16 +82,15 @@ canvas {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 150px;
-  height: 80px;
-  font-size: 26px;
+  width: 130px;
+  height: 70px;
+  font-size: 22px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- メイン -->
 <div id="mainPage">
 
   <div id="betaBox">総合時間: <span id="beta">0時間0分</span></div>
@@ -112,7 +111,6 @@ canvas {
 
 </div>
 
-<!-- 統計 -->
 <div id="statsPage">
   <h1>統計</h1>
   <canvas id="graph"></canvas>
@@ -130,7 +128,6 @@ function save() {
   localStorage.setItem("data", JSON.stringify(data));
 }
 
-// 分→時間分
 function formatTime(min) {
   const h = Math.floor(Math.abs(min) / 60);
   const m = Math.abs(min) % 60;
@@ -215,26 +212,19 @@ function goStats() {
   });
 }
 
-// 戻る
 function back() {
   document.getElementById("statsPage").style.display = "none";
   document.getElementById("mainPage").style.display = "block";
 }
 
-// データ削除
+// リセット
 function resetData() {
   const ok = confirm("データは復元できません。本当に削除しますか？");
-
   if (!ok) return;
 
   localStorage.removeItem("data");
 
-  data = {
-    alpha: 0,
-    beta: 0,
-    logs: {}
-  };
-
+  data = { alpha: 0, beta: 0, logs: {} };
   updateUI();
 }
 
