@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>ポイント管理</title>
+<title>時間管理</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -18,25 +18,25 @@ body {
   position: absolute;
   top: 10px;
   left: 15px;
-  font-size: 18px;
-}
-
-/* α（中央ドーン） */
-#alphaBox {
-  position: absolute;
-  top: 25%;
-  width: 100%;
-  text-align: center;
-  font-size: 90px;
+  font-size: 28px;
   font-weight: bold;
 }
 
-/* マイナス時 */
+/* α（中央） */
+#alphaBox {
+  position: absolute;
+  top: 20%;
+  width: 100%;
+  text-align: center;
+  font-size: 100px;
+  font-weight: bold;
+}
+
 .negative {
   color: red;
 }
 
-/* ボタンエリア */
+/* ボタン */
 #buttons {
   position: absolute;
   bottom: 0;
@@ -44,37 +44,65 @@ body {
 }
 
 button {
-  width: 100%;
-  height: 80px;
-  font-size: 24px;
+  width: 90%;
+  height: 90px;
+  font-size: 28px;
+  margin: 10px auto;
+  display: block;
   border: none;
   background: white;
 }
 
-/* グラフ */
+/* 統計画面 */
+#statsPage {
+  display: none;
+  text-align: center;
+}
+
 canvas {
-  position: absolute;
-  top: 60%;
   width: 100%;
+}
+
+/* 戻るボタン */
+#backBtn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 120px;
+  height: 60px;
+  font-size: 20px;
 }
 </style>
 </head>
 
 <body>
 
-<div id="betaBox">β: <span id="beta">0</span></div>
+<!-- メイン画面 -->
+<div id="mainPage">
 
-<div id="alphaBox">
-  <span id="alpha">0</span>
+  <div id="betaBox">総合時間: <span id="beta">0</span> 分</div>
+
+  <div id="alphaBox">
+    <span id="alpha">0</span> 分
+  </div>
+
+  <div id="buttons">
+    <button onclick="add()">追加</button>
+    <button onclick="consume()">消費</button>
+    <button onclick="goStats()">統計</button>
+  </div>
+
 </div>
 
-<div id="buttons">
-  <button onclick="add()">追加</button>
-  <button onclick="consume()">消費</button>
-  <button onclick="showStats()">統計</button>
-</div>
+<!-- 統計画面 -->
+<div id="statsPage">
 
-<canvas id="graph"></canvas>
+  <h1>統計</h1>
+  <canvas id="graph"></canvas>
+
+  <button id="backBtn" onclick="back()">戻る</button>
+
+</div>
 
 <script>
 let data = JSON.parse(localStorage.getItem("data")) || {
@@ -144,8 +172,11 @@ function consume() {
   updateUI();
 }
 
-// 統計
-function showStats() {
+// 統計へ
+function goStats() {
+  document.getElementById("mainPage").style.display = "none";
+  document.getElementById("statsPage").style.display = "block";
+
   const labels = Object.keys(data.logs);
   const adds = labels.map(d => data.logs[d].add);
   const consumes = labels.map(d => data.logs[d].consume);
@@ -160,6 +191,12 @@ function showStats() {
       ]
     }
   });
+}
+
+// 戻る
+function back() {
+  document.getElementById("statsPage").style.display = "none";
+  document.getElementById("mainPage").style.display = "block";
 }
 
 updateUI();
