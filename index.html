@@ -20,7 +20,6 @@ body {
   left: 15px;
   font-size: 28px;
   font-weight: bold;
-  z-index: 10;
 }
 
 /* リセット */
@@ -28,7 +27,6 @@ body {
   position: fixed;
   top: 10px;
   right: 15px;
-  z-index: 10;
 }
 
 #resetBox button {
@@ -40,9 +38,9 @@ body {
 
 /* α */
 #alphaBox {
-  margin-top: 120px; /* ←下げた */
+  margin-top: 120px;
   text-align: center;
-  font-size: 90px; /* ←少し縮小 */
+  font-size: 90px;
   font-weight: bold;
 }
 
@@ -54,31 +52,27 @@ body {
 #buttons {
   width: 100%;
   max-width: 500px;
-  margin: 50px auto;
+  margin: 40px auto;
 }
 
 button {
   width: 100%;
-  height: 130px; /* ←3/4くらい */
+  height: 130px;
   font-size: 28px;
   margin: 10px 0;
   border: none;
   background: white;
 }
 
-/* 統計 */
-#statsPage {
+/* ページ共通 */
+.page {
   display: none;
   text-align: center;
   margin-top: 80px;
 }
 
-canvas {
-  width: 90%;
-}
-
 /* 戻る */
-#backBtn {
+.backBtn {
   position: fixed;
   bottom: 20px;
   right: 20px;
@@ -86,11 +80,20 @@ canvas {
   height: 70px;
   font-size: 22px;
 }
+
+/* 説明 */
+#helpText {
+  padding: 20px;
+  font-size: 20px;
+  text-align: left;
+  line-height: 1.6;
+}
 </style>
 </head>
 
 <body>
 
+<!-- メイン -->
 <div id="mainPage">
 
   <div id="betaBox">総合時間: <span id="beta">0時間0分</span></div>
@@ -107,14 +110,45 @@ canvas {
     <button onclick="add()">追加</button>
     <button onclick="consume()">消費</button>
     <button onclick="goStats()">統計</button>
+    <button onclick="goHelp()">使い方</button>
   </div>
 
 </div>
 
-<div id="statsPage">
+<!-- 統計 -->
+<div id="statsPage" class="page">
   <h1>統計</h1>
   <canvas id="graph"></canvas>
-  <button id="backBtn" onclick="back()">戻る</button>
+  <button class="backBtn" onclick="back()">戻る</button>
+</div>
+
+<!-- 使い方 -->
+<div id="helpPage" class="page">
+  <h1>使い方</h1>
+
+  <div id="helpText">
+    このアプリは「時間」を管理するためのシンプルなツールです。<br><br>
+
+    ■ 追加<br>
+    勉強や作業など、頑張った時間を入力します。<br>
+    入力した分だけ「時間」と「総合時間」が増えます。<br><br>
+
+    ■ 消費<br>
+    スマホや遊びなどに使った時間を入力します。<br>
+    入力した時間の2倍が「時間」から引かれます。<br><br>
+
+    ■ 時間について<br>
+    「時間」は今あとどれだけ使えるかを表します。<br>
+    マイナスになると使いすぎの状態です。<br><br>
+
+    ■ 総合時間<br>
+    これまで積み上げた合計時間です。<br><br>
+
+    ■ ルール例<br>
+    「スマホ時間は勉強時間の半分まで」など、自分ルールで使えます。
+  </div>
+
+  <button class="backBtn" onclick="back()">戻る</button>
 </div>
 
 <script>
@@ -161,6 +195,15 @@ function updateUI() {
   }
 }
 
+// ページ切替
+function showPage(id) {
+  document.getElementById("mainPage").style.display = "none";
+  document.getElementById("statsPage").style.display = "none";
+  document.getElementById("helpPage").style.display = "none";
+
+  document.getElementById(id).style.display = "block";
+}
+
 // 追加
 function add() {
   const val = parseInt(prompt("追加（分）"));
@@ -193,8 +236,7 @@ function consume() {
 
 // 統計
 function goStats() {
-  document.getElementById("mainPage").style.display = "none";
-  document.getElementById("statsPage").style.display = "block";
+  showPage("statsPage");
 
   const labels = Object.keys(data.logs);
   const adds = labels.map(d => data.logs[d].add);
@@ -212,9 +254,14 @@ function goStats() {
   });
 }
 
+// 使い方
+function goHelp() {
+  showPage("helpPage");
+}
+
+// 戻る
 function back() {
-  document.getElementById("statsPage").style.display = "none";
-  document.getElementById("mainPage").style.display = "block";
+  showPage("mainPage");
 }
 
 // リセット
@@ -228,6 +275,7 @@ function resetData() {
   updateUI();
 }
 
+document.getElementById("mainPage").style.display = "block";
 updateUI();
 </script>
 
