@@ -1,17 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>時間管理 完全版 (画像埋め込み済)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>時間管理 完全版</title>
 
 <style>
 body {
   margin: 0;
-  font-family: sans-serif;
-  transition: background 0.5s;
+  font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  transition: background 0.5s, color 0.5s;
   color: #000;
-  /* 画像の背景に合わせたデフォルト色 */
   background: #87CEFA;
+  min-height: 100vh;
 }
 
 /* 総合時間 */
@@ -19,9 +20,12 @@ body {
   position: fixed;
   top: 10px;
   left: 15px;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: bold;
   z-index: 100;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 5px 10px;
+  border-radius: 8px;
 }
 
 /* リセット */
@@ -33,79 +37,102 @@ body {
 }
 
 #resetBox button {
-  height: 45px;
-  font-size: 18px;
-  border: none;
+  height: 40px;
+  font-size: 14px;
+  border: 1px solid #ccc;
   background: rgba(255, 255, 255, 0.8);
   cursor: pointer;
   border-radius: 5px;
+  padding: 0 15px;
 }
 
-/* α */
+/* α表示エリア */
 #alphaBox {
-  margin-top: 120px;
+  padding-top: 100px;
   text-align: center;
-  font-size: 90px;
+  font-size: clamp(40px, 15vw, 90px);
   font-weight: bold;
 }
 
 .negative {
-  color: red;
+  color: #ff4d4d !important;
+  text-shadow: 0 0 10px rgba(255,0,0,0.2);
 }
 
-/* ボタン */
+/* ボタンエリア */
 #buttons {
-  width: 100%;
+  width: 90%;
   max-width: 500px;
   margin: 40px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-button {
+.mainBtn {
   width: 100%;
-  height: 130px;
+  height: 100px;
   font-size: 28px;
-  margin: 10px 0;
+  font-weight: bold;
   border: none;
   background: white;
+  color: #333;
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transition: transform 0.1s, box-shadow 0.1s;
 }
 
-/* ページ共通 */
+.mainBtn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* 使い方ページ */
 .page {
   display: none;
-  text-align: center;
-  margin-top: 80px;
-  padding-bottom: 100px; /* 下部ボタンのスペース */
+  padding: 20px;
+  box-sizing: border-box;
 }
 
-/* 戻る */
+#helpPage {
+  background: rgba(255, 255, 255, 0.9);
+  color: #333 !important;
+  min-height: 100vh;
+}
+
 .backBtn {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 130px;
-  height: 70px;
-  font-size: 22px;
+  width: 100px;
+  height: 60px;
+  font-size: 18px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
   z-index: 100;
 }
 
-/* 説明 */
 #helpText {
-  padding: 20px;
-  font-size: 20px;
-  text-align: left;
+  max-width: 600px;
+  margin: 0 auto;
+  font-size: 18px;
   line-height: 1.6;
+  text-align: left;
 }
 
-/* 埋め込み画像用のスタイル */
+/* 埋め込み画像 */
 .helpImage {
-    max-width: 100%;
-    height: auto;
-    margin: 20px auto;
-    display: block;
-    /* 元画像の背景と馴染ませる */
-    background: transparent; 
+  width: 100%;
+  max-width: 450px;
+  height: auto;
+  margin: 30px auto;
+  display: block;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
 }
 </style>
 </head>
@@ -113,52 +140,36 @@ button {
 <body>
 
 <div id="mainPage">
-  <div id="betaBox">総合時間: <span id="beta">0時間0分</span></div>
+  <div id="betaBox">総合: <span id="beta">0時間0分</span></div>
 
   <div id="resetBox">
     <button onclick="resetData()">データ消去</button>
   </div>
 
   <div id="alphaBox">
+    <div style="font-size: 20px; opacity: 0.7;">使用可能時間</div>
     <span id="alpha">0時間0分</span>
   </div>
 
   <div id="buttons">
-    <button onclick="add()">追加</button>
-    <button onclick="consume()">消費</button>
-    <button onclick="goHelp()">使い方</button>
+    <button class="mainBtn" style="border-left: 10px solid #4CAF50;" onclick="add()">＋ 追加（作業）</button>
+    <button class="mainBtn" style="border-left: 10px solid #f44336;" onclick="consume()">－ 消費（遊び）</button>
+    <button class="mainBtn" style="background: #eee; height: 60px; font-size: 20px;" onclick="goHelp()">使い方・ランク</button>
   </div>
 </div>
 
 <div id="helpPage" class="page">
-  <h1>使い方</h1>
+  <h1 style="text-align:center;">使い方</h1>
 
   <div id="helpText">
-    このアプリは「時間」を管理するためのシンプルなツールです。<br><br>
+    ■ <strong>追加</strong><br>
+    勉強や作業をした時間を入力します。入力した分だけ「使用可能時間」と「総合時間」が増えます。<br><br>
 
-    ■ 追加<br>
-    勉強や作業など、頑張った時間を入力します。<br>
-    入力した分だけ「時間」と「総合時間」が増えます。<br><br>
+    ■ <strong>消費</strong><br>
+    スマホや遊びに使った時間を入力します。<strong>入力した時間の2倍</strong>が「使用可能時間」から引かれます。<br><br>
 
-    ■ 消費<br>
-    スマホや遊びなどに使った時間を入力します。<br>
-    入力した時間の2倍が「時間」から引かれます。<br><br>
+    ■ <strong>ランクシステム</strong><br>
+    総合時間に応じて背景が変化します。
+  </div>
 
-    ■ 時間について<br>
-    「時間」は今あとどれだけ使えるかを表します。<br>
-    マイナスになると使いすぎの状態です。<br><br>
-
-    ■ 総合時間<br>
-    これまで積み上げた合計時間です。<br><br>
-
-    ■ 背景色の変化（総合時間に応じて画面全体）<br>
-    - 0時間以上：水色<br>
-    - 5時間以上：黄緑色<br>
-    - 10時間以上：青色<br>
-    - 50時間以上：紫色<br>
-    - 100時間以上：赤色<br>
-    - 300時間以上：金色<br>
-    - 500時間以上：灰色<br>
-    - 1000時間以上：虹色<br><br>
-
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAmsAAAHfCAYAAACp9S23AAAMbmlDQ1BJQ0MgUHJvZmlsZQAASImVVwdYVMfSvy/vK3vA0gLp0XvvoYMoCEqHIl1AOiIdka4iiKIIKAqxYSXFFWwgNlBUVBTBfowdFUSKiiXFxIJV/R0p8EneO76b2Xf+uZn/fTPn7OzsOfN+Z4EADu7w+PgcFgsAUbO5Am9Pd2pSajoNvA4fUAEM0AVeOL7EwzMoKAgAit5/4fN5AHm+S74uC/78Nf9nIQQXbwwP5AQA3Mjjm4X82CwZl0tX4LNiM0vRmf40O0Hj6WnK6Nof5CfoOqFr/8S5GTo5LwG07UfM4fMAAHqO+C6enMeHjABywZf6w/gQ+RAnY1K2LzsbwIuYVwW5C3mS+S/7eYv/C8ePyuMLuByh0B+dY8fPFPqA8/j4PPH/K+f4uVw4TzT7H15p5P85f94VvofPg976mNnZfB5U+Z5L5/GvPff8iHwOfM5/fA6P54v+yB7H8eNz+eK4/v7orM88wUfscRw/Pn+BP77L8S5wZf879vP4/P7oXPis6Cyo7Cqf8R5fHMcXfK4+e4EvnsPx6Y/OPYEv/uO4N/458Fv+7A55n9W/yL9iZ/fE5596wT25v8Rz5bP91Hj2XFfw+Y0D/V567bXvXvR66bWnfL93wF9H9/fS5/XScwDk/o6B7q7Ojo+5f9YAsD/v/p/fF4IAdE9P/uM//r5G9+d//v+n8D/8//Pof/4V/9Fw48G89f/36P/+vX5HwYn8v5yvHPDfO78p4JvwnwXvFPCfC+8m/L/I7xY8kP/7A/H9Of/9X/+R8f//jH/xX+U8oN/Bof+l8x/9e8Z/77M7/mHwI8j5ePwI//N/wVf7Y49/6X9xI7vjb2R4//7t/H/Nf4B8vjH/v3f/r48/eX9/P/r/+/+/8X/xZ8X/4r/9X+X8S96f9G/87/xvH//m/73f0X+f9+H/O7/2/87/4F/5n/uT/v1/4b99/I7/8X//9v///X8S8AXwH/4//w3//e//UuA5/w7fL/H5pZ/f4N5A4Q/8Nf9W+O7wXfM1+4vX+e/5I/5G/k7A8wOOfG//w45wI//9v+Y//C/7+f4/Cof//L/rX/y//7f99X//9//f8H/9Wv8FwF+Vfwfwrv7b/1D54v75f9O/y//+v+X/+X/Tf9u/6//B/zX/N/+P/+f/t/v//w/8O//7/yf//zDgxWn+FwG//M/5X/m//p/5f/rf+P/+f/O/+f/b/+n/5v9j+8b/F8m7wWf/Z/1O+8v85wLf/x9eCnxP/p8f8X/rP//z+T38b/0/+/f63/5v9b/+v92//5/+r/ev86///9C9e3/M+/v//5f+X/9P+rftX+8//9/8P//H+P/wP///8z/17/lP+of9v//v+L//N+bZ9bT5mPlR+Vv6b//R//3/0//r/419r798n4H/Gv9RfwFwAn8tvyT/Xf92f5v/E3+mPx//9v8+fw0/yNf0C/iF/fO+07+7v6e/pL/N//7v+y/6r/j//Zf8m/+f9wUBe9/vOveE/0Pff+R/4P+/7/fv+x9/9WreE7XmH9Y/pL8Yv8S/uL//H/x//u//7/+3/u//9//X/1f/4v+f4T3Vq7r33H++C999333vH+8X7+/vxu8G78bvSu9w7zbv0u8K72LPd47H97X27fc945vh+26ve+/9XuOefZ5NnlOeKZ4DnsOeBce7+Vp5znoGe4549nlWv9PTe+Sd3T2Pe854vnb6eXp5rnS+5PzuOdnzpOd9z0fP9Z73PQ494T0ePZM88zzf8/zUbeuN6U3vbe5N7E3tTe8N603oTey9pTep98beM7z39D7Sre99vneXdwUvL6/vve69Pr0mvSHeD7wTve95T3j3eY97z9K651reK/4K5M4Xv8O694nvA+K9S/O+75uS923fyL+HOf/pA97f/L/437z/+9/+P74N/Of+9/z3fv4//H///zN5A4D338v//0wEACACANH90n/YFwCA3O/6+/35fH+r//H/uN/X//7/v8v/x7/f//v/6/9P9v//H//+/34UAMK7y4O/YvC74j8DPhP+/4w7X+wQ+A/v/M+8p8e/445/+X+Bf+Nf+b/tX/7v+Hf/b/+D/g/+v/9//5f/m/+X/3X//f+Uv4P4M/8D/+H/4//wH/pX+9f5/Yg//5f4//v/X//H+Tf7f9Xf7K/0H/x//D8BHPwX+E/+Rfw7f/n/zL/T/7K/3H+U//b5Z/iL/N/4C/6yfxuA0O9Wv9r/93/L/8v//n/Lf8X/v/+7/iv+r//1/6f+v//B/zn/Pf89/x78Pfv7/7v/Xv8X/T/78f85X97f/O/4//z5wD6A8E/65//C///v+/H/7v/8//6v/q//4//7///+r/x7///4//O//Z//C/8O/5H//b9R/f3/oX/f/8m/N/9Ofy7A19/u//D//m/+N//b//r///9O+M/43/o/8w/2j8v/7R/Nf82/538Xf8//yf//f7C/3/8D/6f/Bf+9/xf97/wX+u//7f/p/+f/7X9tX9S/uH8Pfv5/5N//X/m/+j/uH+iPw3/W//U/9w/+M//w//U/8u/8LwZ/+E/7b83/5M/4f//f9l/vf//v9F//Z/zV/6v+9f9l/9v9r/pv96//H/zP+2//J/4D/uH8O/1b/S8CngE+Aj7vV/7X/+r9Xf99//f9z838/P/C//H/p/+W93L//H+3f5P8V//V/+f/9//z/sX9v//z8eP/877i//B/+/9A/7T/f/4//r/9b//5/8t/v3/4P9m/yP+F//3/5P+f///+9/v///+b///8//9//f///jP9Z/8R//X8Yv//80r55ftY+M34zfjL/N/8r/x//p/9f/v//9///9//5f82/0X/P/7F/eP9E/7J//f8p/8X+vfx5+7n/Xv8+/4H/Af92//X/t39Gf7Z/ln/Gf7Z/Rn/Of/99wM+Az4DPAN8BHwHfAR8B3wEfAd8BHwHfAR8B3wEfAd8BHwEfAd8BHwHfAd8BHwHfAd8BHwHfAd8BHwHfAd8BHwHfAR8B3wHfAR8B3wEfAd8BHwHfAR8B3wEfAd8BHwHfAd8BHzCbw7vG//Y/9r/Gv/X+zf9Xf3+/Xn9Xfwb/G/+9/99/Yf/S/6H/f39A/9N/5v+S//X/Bf/n/3v8/v85/+5/wP8E/8D//3/g//H//v//A7/Dv9p/0X+t//3+w/7DvtA+yX7XvtB+0n6WfrV+vb79fr5//D8IP5b/hv9+/4N/gf+F/3r/uv9W/97/G7/r/tv+3/5//v/Af8M/5L/m/+v/z//v/w//P/89//H/z7/xP94/zT/4v/k/9b+7f6X/tH+mf5j/h/+5f7//jX+t/9d/n//z/7D/ov/e/0l/qP9S/9d/+H+N/5n/qv9m/4f+j/+9/m/+9P78/g//Yf+9/v3/qf+g/9z/h//E/8f/vf+y/4X//v///8L/m/+//4H/xP/S/8j/zf/Z/8//0f/7v7n/5//H/9L//r/v/+L/u/+V/4T/oP+R/8X/4P/u/8r/1X/Y//f/uf/P/53//f+U/37/fv+x/9v/5P/V/5j//f+r/5z/k/+F/57/j/+k/3H/Y/+p/4f/sf9S/9H/t/9u/3T/ef+q/0v/l/+l/6j/w//Q/4X/r/+X/4n/4f9v/2j/uv+y/3//sP9c/6r/ev/E/+z/t/9//47/jf90/4n/o/+N/6P/k/+O/5//mv+R/5z/iP9p/8z/f/+L/17/mf9x/3D/iv+w//3/q/+4/5f/f/+t/4r/tf97/2b//v99/3D/Xf84/4z/s/+U//L/k/9w//D/ff+t/7D/m//v/4P//v+o/+P/tf9y//H/p/9P/47/yP95/63/sf/H//z/3f/u//P/uv+I/+z/u/9K//r/9v+e/+v/wP/R/7L//P9R/7//uf9h//r/9/+C//H/vf91/0n/+f9b/07/+f/r/+L/xf9Y//z/r//V//7/ov+Z/+T/uv9f/7r//v9p//z/hP92/7v//v97//f/hP+J//H/mf+H/+v/0/+e/+T/xf+s/6r/of9u//b/z//V/4f/7P+s/43/tf9r//H/lP+g/+z/xv/k/5T/ov/P/+r/9P/h/7X/ov+V/47/m/93/+L//v95//3/lv/F/4v/vv+N/4L/mf+E//z/jv+f//z/6/+y//v/7P9o//r/ov/1/6T/0f/G/5f/0v/Z/7v/mf91/3n/j/+t/5X/u/9S//v/z//R/8T/m//z/4r/iv9u/+z/xv9+/5v/uf/z//T/x//Y/8T/xv+1/9H/tv9e/1P/sf+t/8H/8v+R/8L/0f+z/6H/nf+c/5v/gP+r/0f/yf/r/5P/h/+W/3P//P+4//b/mv80/z//qf+K//r/+f8m/xv/xf8b/4f/r/9m/+7/mP+E/53/b/+O/0f/Uf85/6z/iP9g//H/uf+0/4z/qf+Y//P/mv+i//T/tv9t/5j/tP+u//H/mf/L/5v/zv+A/+X/g/+t/+v/nf+r/5//fP9p/3n/iP/X/2z/4v91/4v/pv/K//n/6P8E/8r/xf+C/+H/jv+r//T/0v8A/xb/GP/x/+j/w/9X//7/w/98/6j//f9d//r/lv9Q/zX/N/+q/1T/x/8W/zP/Uv+t/7L/2v+3//3//f9t/3H/pf+6/87/x/+O/+f//P+V/+H/+f+k//X/u/9Q/47/s/+m/8//tf/I//v/yP+O//f/rv8H/w//m//G/xv/0f/f//X/6f/u/+7/9//I/7j/q//B/+P/5//W/+H//P8V//j/+f/1/5b/vf9o//r/tv+3/0z/uP99/5D/u/+N//T/of+y//v/7v/f/43//f8m/0r/pv91//H/vv+x/+D/yv/N//3/0v+E//v/mf+q/8H//P+V/+z/uf/0/6n/2v/W/+r//v/l/7//m/+U//P/6/+x//b//f+i//r/zf9q/+7/yf+X/5P/yf9v/4v/mv9i/43/o/+e/57/qv95//b/zf+o/5r/v/+s/5P/uv+I/6X/mv+H/2r/7f/P//n/of9e/1n/yf+2/4v/q/+U/5z/kP/x/6r/ov/w/7X/ev98/7b/nf+4/5//w/+F/3b/b/9P/zn/pf9x/+X/1v9T//L/xP98/6P/k//y/8j/p/+l/43/i/+c//j/xv95/+L/1/9X/+L/xv9S//v/rv+M/+f/r//O/9D/mv/P/8b/p/+w/9L/5v+x/9z/nf/E//z/sf/Y/83/zf8W/wn//v9I/6j/mv+4/4n/4f+f/3v/ov+j/+3/9v9w/3//nv+8//n/vP+f//L/yP9t/9z/5v+C//P/uf9U//P/rv9M/+f/xv9j/+v/u/+Y/4v/xv9S/7//zP+w/6v/jv+k/33/o/9Y//D/rf9U//b/z/9h//X/5/+H//z/3v+G/+L/+f9U/6z/qv/T/+D/pf+5/+T/xf+9/7r/nf/k/6T/0v+V/8b/3/+1/7//vv+m/7r/z/9+/7j/qP/G//v//P8N/+f/r/+R/7j//f/N/9H/l/+8//z/of+W/57/0v/A//z/xv+v/8z/1f/e/+L/5v+Y/+T/pv8I/xf/H/84//j//P/L/+b/oP/f/6z/D/8S/zH/J//x/8z/zf/Y//7/w/+f/7n/of+5/+v/6v+k//v/t/8G/xP/S/8b/4
+  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAmsAAAHfCAYAAACp9S23AAAMbmlDQ1BJQ0MgUHJvZmlsZQAASImVVwdYVMfSvy/vK3vA0gLp0XvvoYMoCEqHIl1AOiIdka4iiKIIKAqxYSXFFWwgNlBUVBTBfowdFUSKiiXFxIJV/R0p8EneO76b2Xf+uZn/fTPn7OzsOfN+Z4EADu7w+PgcFgsAUbO5Am9Pd2pSajoNvA4fUAEM0AVeOL7EwzMoKAgAit5/4fN5AHm+S74uC/78Nf9nIQQXbwwP5AQA3Mjjm4X82CwZl0tX4LNiM0vRmf40O0Hj6WnK6Nof5CfoOqFr/8S5GTo5LwG07UfM4fMAAHqO+C6enMeHjABywZf6w/gQ+RAnY1K2LzsbwIuYVwW5C3mS+S/7eYv/C8ePyuMLuByh0B+dY8fPFPqA8/j4PPH/K+f4uVw4TzT7H15p5P85f94VvofPg976mNnZfB5U+Z5L5/GvPff8iHwOfM5/fA6P54v+yB7H8eNz+eK4/v7orM88wUfscRw/Pn+BP77L8S5wZf879vP4/P7oXPis6Cyo7Cqf8R5fHMcXfK4+e4EvnsPx6Y/OPYEv/uO4N/458Fv+7A55n9W/yL9iZ/fE5596wT25v8Rz5bP91Hj2XFfw+Y0D/V567bXvXvR66bWnfL93wF9H9/fS5/XScwDk/o6B7q7Ojo+5f9YAsD/v/p/fF4IAdE9P/uM//r5G9+d//v+n8D/8//Pof/4V/9Fw48G89f/36P/+vX5HwYn8v5yvHPDfO78p4JvwnwXvFPCfC+8m/L/I7xY8kP/7A/H9Of/9X/+R8f//jH/xX+U8oN/Bof+l8x/9e8Z/77M7/mHwI8j5ePwI//N/wVf7Y49/6X9xI7vjb2R4//7t/H/Nf4B8vjH/v3f/r48/eX9/P/r/+/+/8X/xZ8X/4r/9X+X8S96f9G/87/xvH//m/73f0X+f9+H/O7/2/87/4F/5n/uT/v1/4b99/I7/8X//9v///X8S8AXwH/4//w3//e//UuA5/w7fL/H5pZ/f4N5A4Q/8Nf9W+O7wXfM1+4vX+e/5I/5G/k7A8wOOfG//w45wI//9v+Y//C/7+f4/Cof//L/rX/y//7f99X//9//f8H/9Wv8FwF+Vfwfwrv7b/1D54v75f9O/y//+v+X/+X/Tf9u/6//B/zX/N/+P/+f/t/v//w/8O//7/yf//zDgxWn+FwG//M/5X/m//p/5f/rf+P/+f/O/+f/b/+n/5v9j+8b/F8m7wWf/Z/1O+8v85wLf/x9eCnxP/p8f8X/rP//z+T38b/0/+/f63/5v9b/+v92//5/+r/ev86///9C9e3/M+/v//5f+X/9P+rftX+8//9/8P//H+P/wP///8z/17/lP+of9v//v+L//N+bZ9bT5mPlR+Vv6b//R//3/0//r/419r798n4H/Gv9RfwFwAn8tvyT/Xf92f5v/E3+mPx//9v8+fw0/yNf0C/iF/fO+07+7v6e/pL/N//7v+y/6r/j//Zf8m/+f9wUBe9/vOveE/0Pff+R/4P+/7/fv+x9/9WreE7XmH9Y/pL8Yv8S/uL//H/x//u//7/+3/u//9//X/1f/4v+f4T3Vq7r33H++C999333vH+8X7+/vxu8G78bvSu9w7zbv0u8K72LPd47H97X27fc945vh+26ve+/9XuOefZ5NnlOeKZ4DnsOeBce7+Vp5znoGe4549nlWv9PTe+Sd3T2Pe854vnb6eXp5rnS+5PzuOdnzpOd9z0fP9Z73PQ494T0ePZM88zzf8/zUbeuN6U3vbe5N7E3tTe8N603oTey9pTep98beM7z39D7Sre99vneXdwUvL6/vve69Pr0mvSHeD7wTve95T3j3eY97z9K651reK/4K5M4Xv8O694nvA+K9S/O+75uS923fyL+HOf/p
